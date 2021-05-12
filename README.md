@@ -1,6 +1,20 @@
 # jGrowl 
 jGrowl is a jQuery plugin that raises unobtrusive messages within the browser, similar to the way that OS X's Growl Framework works. The idea is simple, deliver notifications to the end user in a noticeable way that doesn't obstruct the work flow and yet keeps the user informed.
 
+This is a fork of https://github.com/stanlemon/jGrowl, with updates on jquery deprecated functions
+
+## Sync Fork
+https://docs.github.com/en/free-pro-team@latest/github/collaborating-with-issues-and-pull-requests/merging-an-upstream-repository-into-your-fork
+
+```
+$ git pull upstream TAG_NANE
+$ git push
+
+$ git fetch -t upstream
+$ git remote update
+$ git push --tags
+```
+
 ## Installation
 jGrowl can be added to your project using package managers like bower and npm or directly into your html using cdnjs, as well as the good old fashioned copy-paste into your project directory.
 
