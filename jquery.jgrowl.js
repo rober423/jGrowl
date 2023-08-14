@@ -238,6 +238,7 @@
 			easing:				'swing',
 			closer:				true,
 			closeTemplate:		'&times;',
+			closeLabel:	     	'&times;',
 			closerTemplate:		'<div>[ close all ]</div>',
 			log:				function() {},
 			beforeOpen:			function() {},
@@ -287,7 +288,7 @@
 
 			var notification = $('<div/>')
 				.addClass('jGrowl-notification alert ' + o.themeState + ' ui-corner-all' + ((o.group !== undefined && o.group !== '') ? ' ' + o.group : ''))
-				.append($('<button/>').addClass('jGrowl-close').html(o.closeTemplate))
+				.append($('<button/>').attr('aria-label', o.closeLabel).addClass('jGrowl-close').html(o.closeTemplate))
 				.append($('<div/>').addClass('jGrowl-header').html(o.header))
 				.append($('<div/>').addClass('jGrowl-message').html(message))
 				.data("jGrowl", o).addClass(o.theme).children('.jGrowl-close').on("click.jGrowl", function() {
