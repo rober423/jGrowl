@@ -218,41 +218,43 @@
 	};
 
 	$.extend( $.fn.jGrowl.prototype , {
-
 		/** Default JGrowl Settings **/
 		defaults: {
+      //global options
 			pool:				0,
+			check:				250,
+			position:			'top-right',
+			appendTo:			'body',
+			closer:				true,
+			closerTemplate:		'<div>[ close all ]</div>',
+
+      //individual notification options
 			header:				'',
 			group:				'',
 			sticky:				false,
-			position:			'top-right',
-			appendTo:			'body',
 			glue:				'after',
 			theme:				'default',
 			themeState:			'highlight',
 			corners:			'10px',
-			check:				250,
 			life:				3000,
 			closeDuration:		'normal',
 			openDuration:		'normal',
 			easing:				'swing',
-			closer:				true,
-			closeTemplate:		'&times;',
-			closeLabel:	     	'&times;',
-			closerTemplate:		'<div>[ close all ]</div>',
-			log:				function() {},
-			beforeOpen:			function() {},
-			afterOpen:			function() {},
-			open:				function() {},
-			beforeClose:		function() {},
-			close:				function() {},
-			click:				function() {},
 			animateOpen:		{
 				opacity:		'show'
 			},
 			animateClose:		{
 				opacity:		'hide'
-			}
+			},
+			closeTemplate:		'&times;',
+			closeLabel:	     	'close',
+			log:				function() {},
+			beforeOpen:			function() {},
+			open:				function() {},
+			afterOpen:			function() {},
+			click:				function() {},
+			beforeClose:		function() {},
+			close:				function() {}
 		},
 
 		notifications: [],
