@@ -223,10 +223,12 @@
       //global options
 			pool:				0,
 			check:				250,
+			ariaAssertive: false,
 			position:			'top-right',
 			appendTo:			'body',
 			closer:				true,
 			closerTemplate:		'<div>[ close all ]</div>',
+			closerLabel: 'close all notifications',
 
       //individual notification options
 			header:				'',
@@ -354,7 +356,7 @@
 			/** Add a Global Closer if more than one notification exists **/
 			if ($('.jGrowl-notification:parent', self.element).length > 1 &&
 				$('.jGrowl-closer', self.element).length === 0 && this.defaults.closer !== false ) {
-				$(this.defaults.closerTemplate).addClass('jGrowl-closer ' + this.defaults.themeState + ' ui-corner-all').addClass(this.defaults.theme)
+				$(this.defaults.closerTemplate).attr('role', 'button').attr("tabIndex", "0").addClass('jGrowl-closer ' + this.defaults.themeState + ' ui-corner-all').addClass(this.defaults.theme)
 					.appendTo(self.element).animate(this.defaults.animateOpen, this.defaults.speed, this.defaults.easing)
 					.on("click.jGrowl", function() {
 						$(this).siblings().trigger("jGrowl.beforeClose");
@@ -363,6 +365,9 @@
 							self.defaults.closer.apply( $(this).parent()[0] , [$(this).parent()[0]] );
 						}
 					});
+
+          if ( this.defaults.closerLabel && this.defaults.closerLabel.trim() !== '' )
+            $('.jGrowl-closer', self.element).attr('aria-label', this.defaults.closerLabel);
 			}
 		},
 
@@ -384,15 +389,13 @@
 				this.render( this.notifications.shift() );
 
 			if ($(this.element).find('.jGrowl-notification:parent').length < 2 ) {
-				$(this.element).find('.jGrowl-closer').animate(this.defaults.animateClose, this.defaults.speed, this.defaults.easing, function() {
-					$(this).remove();
-				});
+				$(this.element).find('.jGrowl-closer').animate(this.defaults.animateClose, this.defaults.speed, this.defaults.easing, $.remove);
 			}
 		},
 
 		/** Setup the jGrowl Notification Container **/
 		startup: function(e) {
-			this.element = $(e).addClass('jGrowl').append('<div class="jGrowl-notification"></div>');
+			this.element = $(e).addClass('jGrowl').attr('role', "alert").attr('aria-live', this.defaults.ariaAssertive ? "assertive" : "polite").append('<div class="jGrowl-notification"></div>');
 			this.interval = setInterval( function() {
 				// some error in chage ^^
 				var instance = $(e).data('jGrowl.instance');
