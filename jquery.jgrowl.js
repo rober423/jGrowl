@@ -188,6 +188,20 @@
 		$('#jGrowl').jGrowl(m,o);
 	};
 
+  const prefersReduced = window.matchMedia(`(prefers-reduced-motion: reduce)`) === true || window.matchMedia(`(prefers-reduced-motion: reduce)`).matches === true;
+
+  //function parameter func must include $(this).show() or .remove()/.hide() for use when prefersReduced is true.
+  $.fn.jGrowlAnimate = function( properties, duration, easing, func, funcArgs ) {
+    if ( prefersReduced ) {
+      if ( typeof func === 'function' ) func.apply(this, funcArgs);
+      return $(this);
+    }
+    else {
+      return $(this).animate(properties, duration, easing, function() {
+        if ( typeof func === 'function' ) func.apply(this, funcArgs);
+      });
+    }
+  };
 
 	/** Raise jGrowl Notification on a jGrowl Container **/
 	$.fn.jGrowl = function( m , o ) {
@@ -319,15 +333,18 @@
 						$('.jGrowl-notification:first', self.element).before(notification);
 					}
 
-					$(this).animate(o.animateOpen, o.openDuration, o.easing, function() {
+          $(this).jGrowlAnimate(o.animateOpen, o.openDuration, o.easing, function() {
+            var options = $(this).data("jGrowl");
+
 						// Fixes some anti-aliasing issues with IE filters.
-						if ($.support.opacity === false)
+						if ( $.support.opacity === false )
 							this.style.removeAttribute('filter');
 
-						if ( $(this).data("jGrowl") !== null && typeof $(this).data("jGrowl") !== 'undefined') // Happens when a notification is closing before it's open.
+						if ( typeof options !== 'undefined' && options !== null ) // Happens when a notification is closing before it's open.
 							$(this).data("jGrowl").created = new Date();
 
-						$(this).trigger('jGrowl.afterOpen');
+						$(this).show();
+            $(this).trigger('jGrowl.afterOpen');
 					});
 				}
 			}).on('jGrowl.afterOpen', function() {
@@ -340,13 +357,10 @@
 			}).on('jGrowl.close', function() {
 				// Pause the notification, lest during the course of animation another close event gets called.
 				$(this).data('jGrowl.pause', true);
-				$(this).animate(o.animateClose, o.closeDuration, o.easing, function() {
-					if ( typeof o.close === 'function' ) {
-						if ( o.close.apply( notification , [notification,message,o,self.element] ) !== false )
+
+        $(this).jGrowlAnimate(o.animateClose, o.closeDuration, o.easing, function() {
+					if ( typeof o.close !== 'function' || o.close.apply( notification , [notification,message,o,self.element] ) !== false )
 							$(this).remove();
-					} else {
-						$(this).remove();
-					}
 				});
 			}).trigger('jGrowl.beforeOpen');
 
@@ -357,17 +371,17 @@
 			if ($('.jGrowl-notification:parent', self.element).length > 1 &&
 				$('.jGrowl-closer', self.element).length === 0 && this.defaults.closer !== false ) {
 				$(this.defaults.closerTemplate).attr('role', 'button').attr("tabIndex", "0").addClass('jGrowl-closer ' + this.defaults.themeState + ' ui-corner-all').addClass(this.defaults.theme)
-					.appendTo(self.element).animate(this.defaults.animateOpen, this.defaults.speed, this.defaults.easing)
-					.on("click.jGrowl", function() {
-						$(this).siblings().trigger("jGrowl.beforeClose");
+        .appendTo(self.element).jGrowlAnimate(this.defaults.animateOpen, this.defaults.speed, this.defaults.easing, function() { $(this).show() })
+				.on("click.jGrowl", function() {
+					$(this).siblings().trigger("jGrowl.beforeClose");
 
-						if ( typeof self.defaults.closer === 'function' ) {
-							self.defaults.closer.apply( $(this).parent()[0] , [$(this).parent()[0]] );
-						}
-					});
+					if ( typeof self.defaults.closer === 'function' ) {
+						self.defaults.closer.apply( $(this).parent()[0] , [$(this).parent()[0]] );
+					}
+				});
 
-          if ( this.defaults.closerLabel && this.defaults.closerLabel.trim() !== '' )
-            $('.jGrowl-closer', self.element).attr('aria-label', this.defaults.closerLabel);
+        if ( this.defaults.closerLabel && this.defaults.closerLabel.trim() !== '' )
+          $('.jGrowl-closer', self.element).attr('aria-label', this.defaults.closerLabel);
 			}
 		},
 
@@ -389,7 +403,7 @@
 				this.render( this.notifications.shift() );
 
 			if ($(this.element).find('.jGrowl-notification:parent').length < 2 ) {
-				$(this.element).find('.jGrowl-closer').animate(this.defaults.animateClose, this.defaults.speed, this.defaults.easing, $.remove);
+        $('.jGrowl-closer', this.element).jGrowlAnimate(this.defaults.animateClose, this.defaults.speed, this.defaults.easing, function() { $(this).remove() });
 			}
 		},
 
