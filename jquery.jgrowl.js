@@ -158,9 +158,9 @@
  // Support for UMD style
 // Based on UMDjs (https://github.com/umdjs/umd/blob/master/templates/jqueryPlugin.js)
 (function (factory) {
-    if (typeof define === 'function' && define.amd) {
+    if ( typeof define === 'function' && define.amd ) {
         define(['jquery'], factory);
-    } else if (typeof module === 'object' && module.exports) {
+    } else if ( typeof module === 'object' && module.exports ) {
         module.exports = function( root, jQuery ) {
             if ( jQuery === undefined ) {
                 if ( typeof window !== 'undefined' ) {
@@ -178,8 +178,10 @@
     }
 }(function ($) {
 
-	/** jGrowl Wrapper - Establish a base jGrowl Container for compatibility with older releases. **/
-	$.jGrowl = function( m , o ) {
+  let jGrowlNotificationIndex = 0;
+
+  /** jGrowl Wrapper - Establish a base jGrowl Container for compatibility with older releases. **/
+  $.jGrowl = function( m , o ) {
 		// To maintain compatibility with older version that only supported one instance we'll create the base container.
 		if ( $('#jGrowl').length === 0 )
 			$('<div id="jGrowl"></div>').addClass( (o && o.position) ? o.position : $.jGrowl.defaults.position ).appendTo( (o && o.appendTo) ? o.appendTo : $.jGrowl.defaults.appendTo );
@@ -300,21 +302,28 @@
 			var self = this;
 			var message = n.message;
 			var o = n.options;
+      var globalOptions = this.defaults;
+      var idString = "jGrowl-notification-" + jGrowlNotificationIndex++;
 
-			// Support for jQuery theme-states, if this is not used it displays a widget header
+      // Support for jQuery theme-states, if this is not used it displays a widget header
 			o.themeState = (o.themeState === '') ? '' : 'ui-state-' + o.themeState;
 
-			var notification = $('<div/>')
+			var notification = $('<div/>').attr("id", idString).attr("tabindex", 0)
 				.addClass('jGrowl-notification alert ' + o.themeState + ' ui-corner-all' + ((o.group !== undefined && o.group !== '') ? ' ' + o.group : ''))
 				.append($('<button/>').attr('aria-label', o.closeLabel).addClass('jGrowl-close').html(o.closeTemplate))
-				.append($('<div/>').addClass('jGrowl-header').html(o.header))
-				.append($('<div/>').addClass('jGrowl-message').html(message))
+				.append($('<div/>').attr("id", idString + "-header").addClass('jGrowl-header').html(o.header))
+				.append($('<div/>').attr("id", idString + "-message").addClass('jGrowl-message').html(message))
 				.data("jGrowl", o).addClass(o.theme).children('.jGrowl-close').on("click.jGrowl", function() {
 					$(this).parent().trigger('jGrowl.beforeClose');
 					return false;
 				})
 				.parent();
 
+      //direct screenreader to read message logically
+      var headerExists = o.header && o.header.trim() !== '';
+      $(notification).attr("aria-labelledby", idString + (headerExists ? "-header" : "-message"))
+      if ( headerExists )
+        $(notification).attr("aria-describedby", idString + "-message");
 
 			/** Notification Actions **/
 			$(notification).on("mouseover.jGrowl", function() {
@@ -322,11 +331,11 @@
 			}).on("mouseout.jGrowl", function() {
 				$('.jGrowl-notification', self.element).data("jGrowl.pause", false);
 			}).on('jGrowl.beforeOpen', function() {
-				if ( o.beforeOpen.apply( notification , [notification,message,o,self.element] ) !== false ) {
+				if ( typeof o.beforeOpen !== 'function' || o.beforeOpen.apply( notification , [notification,message,o,self.element] ) !== false ) {
 					$(this).trigger('jGrowl.open');
 				}
 			}).on('jGrowl.open', function() {
-				if ( o.open.apply( notification , [notification,message,o,self.element] ) !== false ) {
+				if ( typeof o.open !== 'function' || o.open.apply( notification , [notification,message,o,self.element] ) !== false ) {
 					if ( o.glue == 'after' ) {
 						$('.jGrowl-notification:last', self.element).after(notification);
 					} else {
@@ -352,7 +361,7 @@
 			}).on('click', function() {
 				o.click.apply( notification, [notification,message,o,self.element] );
 			}).on('jGrowl.beforeClose', function() {
-				if ( o.beforeClose.apply( notification , [notification,message,o,self.element] ) !== false )
+				if ( typeof o.beforeClose !== 'function' || o.beforeClose.apply( notification , [notification,message,o,self.element] ) !== false )
 					$(this).trigger('jGrowl.close');
 			}).on('jGrowl.close', function() {
 				// Pause the notification, lest during the course of animation another close event gets called.
@@ -360,7 +369,7 @@
 
         $(this).jGrowlAnimate(o.animateClose, o.closeDuration, o.easing, function() {
 					if ( typeof o.close !== 'function' || o.close.apply( notification , [notification,message,o,self.element] ) !== false )
-							$(this).remove();
+						$(this).remove();
 				});
 			}).trigger('jGrowl.beforeOpen');
 
@@ -368,20 +377,20 @@
 			if ( o.corners !== '' && $.fn.corner !== undefined ) $(notification).corner( o.corners );
 
 			/** Add a Global Closer if more than one notification exists **/
-			if ($('.jGrowl-notification:parent', self.element).length > 1 &&
-				$('.jGrowl-closer', self.element).length === 0 && this.defaults.closer !== false ) {
-				$(this.defaults.closerTemplate).attr('role', 'button').attr("tabIndex", "0").addClass('jGrowl-closer ' + this.defaults.themeState + ' ui-corner-all').addClass(this.defaults.theme)
-        .appendTo(self.element).jGrowlAnimate(this.defaults.animateOpen, this.defaults.speed, this.defaults.easing, function() { $(this).show() })
+      if ($('.jGrowl-notification:parent', self.element).length > 1 &&
+				$('.jGrowl-closer', self.element).length === 0 && globalOptions.closer !== false ) {
+				$(globalOptions.closerTemplate).attr('role', 'button').attr("tabIndex", "0").addClass('jGrowl-closer ' + globalOptions.themeState + ' ui-corner-all').addClass(globalOptions.theme)
+        .appendTo(self.element).jGrowlAnimate(globalOptions.animateOpen, globalOptions.speed, globalOptions.easing, function() { $(this).show() })
 				.on("click.jGrowl", function() {
 					$(this).siblings().trigger("jGrowl.beforeClose");
 
-					if ( typeof self.defaults.closer === 'function' ) {
-						self.defaults.closer.apply( $(this).parent()[0] , [$(this).parent()[0]] );
+					if ( typeof globalOptions.closer === 'function' ) {
+						globalOptions.closer.apply( $(this).parent()[0] , [$(this).parent()[0]] );
 					}
 				});
 
-        if ( this.defaults.closerLabel && this.defaults.closerLabel.trim() !== '' )
-          $('.jGrowl-closer', self.element).attr('aria-label', this.defaults.closerLabel);
+        if ( globalOptions.closerLabel && globalOptions.closerLabel.trim() !== '' )
+          $('.jGrowl-closer', self.element).attr('aria-label', globalOptions.closerLabel);
 			}
 		},
 
@@ -409,7 +418,7 @@
 
 		/** Setup the jGrowl Notification Container **/
 		startup: function(e) {
-			this.element = $(e).addClass('jGrowl').attr('role', "alert").attr('aria-live', this.defaults.ariaAssertive ? "assertive" : "polite").append('<div class="jGrowl-notification"></div>');
+			this.element = $(e).addClass('jGrowl').attr('role', "alert").attr('aria-live', this.defaults.ariaAssertive ? "assertive" : "polite").append('<div id="jGrowl-notification-' + jGrowlNotificationIndex++ + '" class="jGrowl-notification"></div>');
 			this.interval = setInterval( function() {
 				// some error in chage ^^
 				var instance = $(e).data('jGrowl.instance');
