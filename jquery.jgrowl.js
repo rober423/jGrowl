@@ -206,7 +206,7 @@
   };
 
 	/** Raise jGrowl Notification on a jGrowl Container **/
-	$.fn.jGrowl = function( m , o ) {
+  $.fn.jGrowl = function( m , o ) {
 		// Short hand for passing in just an object to this method
 		if ( o === undefined && $.isPlainObject(m) ) {
 			o = m;

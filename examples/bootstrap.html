@@ -17,7 +17,7 @@
       <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
       <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
-        
+
     <style>
     body {
       padding-top: 50px;
@@ -54,6 +54,7 @@
       <div>
         <h1>jGrowl and Bootstrap</h1>
         <p class="lead">This is a Bootstrap starter template with jGrowl integrated.  As you can see it's extremely easy to make jGrowl look and feel like part of Bootstrap.</p>
+        <p><button onclick="$('#jGrowl-container1').jGrowl('One more message...', {sticky: true});">Create a new message.</button></p>
       </div>
       <div id="jGrowl-container2" class="jGrowl"></div>
     </div><!-- /.container -->
@@ -72,15 +73,15 @@
 
             var alertTypes = ['success', 'info', 'warning', 'danger'];
 
-            for (var i=0; i<10; i++) {
+            for (let i=0; i<10; i++) {
                 setTimeout(function(){
                     var alertType = alertTypes[Math.floor(Math.random()*alertTypes.length)];
 
                     $('#jGrowl-container1').jGrowl({
                         header: alertType.substring(0, 1).toUpperCase() + alertType.substring(1) + ' Notification',
-                        message: 'Hello world ',
+                        message: 'Hello world ' + i.toString(), //'let' in the for loop declaration allows 'i' to be used here as a distict variable for each loop, otherwise var would make 'i' always be 10 by the time the elements are rendered.
                         group: 'alert-' + alertType,
-                        life: 5000
+                        life: 7000
                     });
                 }, i*2000);
             }
